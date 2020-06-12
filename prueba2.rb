@@ -1,6 +1,7 @@
 require 'net/http' 
 require 'json'
 require 'openssl'
+require 'uri'
 
 url = 'https://api.nasa.gov/mars-photos/api/v1/rovers/curiosity/photos?sol=1000&'
 apikey = 'api_key=GPOt5KUVeNz9PPPwIPPx2uzVs6NLFWlIMbGgYNuA'
@@ -8,7 +9,7 @@ apikey = 'api_key=GPOt5KUVeNz9PPPwIPPx2uzVs6NLFWlIMbGgYNuA'
 #agregar apikey
 #concatenar la apikey en la url
 
-def get_data(url,apikey)
+def request(url,apikey)
     
     url = URI(url + apikey)
     http= Net::HTTP.new(url.host, url.port)
@@ -19,27 +20,26 @@ def get_data(url,apikey)
     request["cache-control"]="no-cache"
     request["postamn-token"]= '5f4b1b36-5bcd-4c49-f578-75a752af8fd5'
     response = http.request(request)
-    JSON.parse(response.read_body)
+    return JSON.parse(response.read_body)
 
 end
 
-data = get_data(url,apikey)
+data = request(url,apikey)
 
 #print data
 
-puts
 
-def build_web_page(photos)
+data_photos = data["photos"]
 
-     
-      html = ""
-      photos.each do |photo|
-      html += "<img src=\"#{photo}\">\n"
-      end
+def build_web_page(hash)
 
-      File.write('./index.html',html)
+     html =""
+    hash.each do |elem|
+        html += "<li><img src=\"#{elem["img_src"]}\"></li>"
+    end
 
- end
+    File.write("index.html",html)
+end
 
- puts build_web_page(data)
+ puts build_web_page(data_photos)
 
